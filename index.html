@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle Financeiro e Balanço Patrimonial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- =====================================================================
+       ESTILOS SEPARADOS (CSS)
+       ===================================================================== -->
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-soft: #e2e8f0;
+      --border-strong: #cbd5e1;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Mantém badges e rótulos de status estritamente em uma única linha */
+    .status-single-line {
+      white-space: nowrap;
+      display: inline-block;
+      line-height: 1.25;
+    }
+
+    .app-shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+    }
+
+    @media (min-width: 768px) {
+      .app-shell {
+        padding: 2rem 1.5rem 3.5rem;
+      }
+    }
+
+    .surface-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-soft);
+      border-radius: 1rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell space-y-6">
+
+    <!-- ===================================================================
+         1. CABEÇALHO E AÇÕES RÁPIDAS
+         =================================================================== -->
+    <header class="surface-card p-5 md:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 mb-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span>Balanço em Tempo Real</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+          Controle Financeiro e Balanço Patrimonial
+        </h1>
+        <p class="text-sm text-slate-600 mt-1">
+          Lançamentos ilimitados por data, ordenação automática e igualdade contábil (<span class="font-semibold text-slate-800">Ativo = Passivo Exigível + Riqueza Líquida</span>).
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <span id="saveStatusPill" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-800">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          Salvo no navegador
+        </span>
+        <button
+          type="button"
+          id="btnResetSeed"
+          class="rounded-xl border border-slate-300 bg-white hover:bg-slate-100 px-3.5 py-2 text-xs font-bold text-slate-800 transition cursor-pointer"
+        >
+          Restaurar 14 lançamentos iniciais
+        </button>
+      </div>
+    </header>
+
+    <!-- ===================================================================
+         2. CARDS DE RESUMO SUPERIORES
+         =================================================================== -->
+    <section aria-label="Resumo financeiro" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <!-- Total Entradas (Recebido) -->
+      <article class="surface-card p-5 border-l-4 border-l-emerald-600">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Entradas (Recebido)</p>
+        <p id="cardEntradasRecebidas" class="mt-2 text-2xl font-extrabold text-emerald-700 tabular-nums">R$ 0,00</p>
+        <p id="cardAReceberSub" class="mt-1 text-xs font-medium text-slate-500 tabular-nums">A receber: R$ 0,00</p>
+      </article>
+
+      <!-- Total Saídas (Pago) -->
+      <article class="surface-card p-5 border-l-4 border-l-rose-600">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Saídas (Pago)</p>
+        <p id="cardSaidasPagas" class="mt-2 text-2xl font-extrabold text-rose-700 tabular-nums">R$ 0,00</p>
+        <p id="cardAPagarSub" class="mt-1 text-xs font-medium text-slate-500 tabular-nums">A pagar: R$ 0,00</p>
+      </article>
+
+      <!-- Saldo em Caixa / Ativo -->
+      <article class="surface-card p-5 border-l-4 border-l-slate-900">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Saldo em Caixa / Ativo</p>
+        <p id="cardTotalAtivo" class="mt-2 text-2xl font-extrabold text-slate-900 tabular-nums">R$ 0,00</p>
+        <p id="cardCaixaSub" class="mt-1 text-xs font-medium text-slate-500 tabular-nums">Caixa realizado: R$ 0,00</p>
+      </article>
+
+      <!-- Riqueza Líquida -->
+      <article class="surface-card p-5 border-l-4 border-l-indigo-600">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Riqueza Líquida</p>
+        <p id="cardRiquezaLiquida" class="mt-2 text-2xl font-extrabold text-indigo-700 tabular-nums">R$ 0,00</p>
+        <p class="mt-1 text-xs font-medium text-slate-500">Ativo − ABS(Passivo Exigível)</p>
+      </article>
+    </section>
+
+    <!-- ===================================================================
+         3. FORMULÁRIO RÁPIDO DE LANÇAMENTO / EDIÇÃO
+         =================================================================== -->
+    <section aria-label="Novo lançamento" class="surface-card p-5 md:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h2 id="formHeading" class="text-base font-bold text-slate-900">Novo Lançamento</h2>
+        <button
+          type="button"
+          id="btnCancelEdit"
+          class="hidden rounded-lg border border-slate-300 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 transition cursor-pointer"
+        >
+          Cancelar edição
+        </button>
+      </div>
+
+      <form id="entryForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end" novalidate>
+        <input type="hidden" id="editEntryId" value="" />
+
+        <!-- Data -->
+        <div class="lg:col-span-2">
+          <label for="fieldData" class="block text-xs font-bold uppercase tracking-wide text-slate-700 mb-1">
+            Data
+          </label>
+          <input
+            type="date"
+            id="fieldData"
+            required
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 focus:border-slate-900 focus:outline-none tabular-nums"
+          />
+        </div>
+
+        <!-- Descrição -->
+        <div class="lg:col-span-3">
+          <label for="fieldDescricao" class="block text-xs font-bold uppercase tracking-wide text-slate-700 mb-1">
+            Descrição
+          </label>
+          <input
+            type="text"
+            id="fieldDescricao"
+            placeholder="Ex.: Pró-labore, Cartão de crédito"
+            required
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+          />
+        </div>
+
+        <!-- Categoria -->
+        <div class="lg:col-span-2">
+          <label for="fieldCategoria" class="block text-xs font-bold uppercase tracking-wide text-slate-700 mb-1">
+            Categoria
+          </label>
+          <select
+            id="fieldCategoria"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-900 focus:border-slate-900 focus:outline-none cursor-pointer"
+          >
+            <option value="Entrada">Entrada</option>
+            <option value="Saída">Saída</option>
+          </select>
+        </div>
+
+        <!-- Valor -->
+        <div class="lg:col-span-2">
+          <label for="fieldValor" class="block text-xs font-bold uppercase tracking-wide text-slate-700 mb-1">
+            Valor (R$)
+          </label>
+          <input
+            type="text"
+            inputmode="decimal"
+            id="fieldValor"
+            placeholder="Ex.: 20,00"
+            required
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none tabular-nums"
+          />
+        </div>
+
+        <!-- Status -->
+        <div class="lg:col-span-3">
+          <label for="fieldStatus" class="block text-xs font-bold uppercase tracking-wide text-slate-700 mb-1">
+            Status
+          </label>
+          <select
+            id="fieldStatus"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-semibold text-slate-900 focus:border-slate-900 focus:outline-none cursor-pointer"
+          >
+            <option value="Recebido">Recebido</option>
+            <option value="a Receber">a Receber</option>
+            <option value="Pago">Pago</option>
+            <option value="a Pagar">a Pagar</option>
+          </select>
+        </div>
+
+        <!-- Observação -->
+        <div class="sm:col-span-2 lg:col-span-9">
+          <label for="fieldObservacao" class="block text-xs font-bold uppercase tracking-wide text-slate-700 mb-1">
+            Observação / Conta
+          </label>
+          <input
+            type="text"
+            id="fieldObservacao"
+            placeholder="Ex.: Entrada inicial no BB, Adianto fatura cartão"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
+          />
+        </div>
+
+        <!-- Botão Salvar -->
+        <div class="sm:col-span-2 lg:col-span-3">
+          <button
+            type="submit"
+            id="btnSubmitEntry"
+            class="w-full rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-sm font-bold text-white transition cursor-pointer"
+          >
+            Adicionar Lançamento
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===================================================================
+         4. BALANÇO PATRIMONIAL EM TEMPO REAL
+         =================================================================== -->
+    <section aria-label="Balanço Patrimonial" class="surface-card p-5 md:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-200">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-slate-900">Balanço Patrimonial</h2>
+          <p class="text-xs sm:text-sm text-slate-600">
+            Atualização automática conforme os status <span class="status-single-line font-semibold">Recebido</span>,
+            <span class="status-single-line font-semibold">a Receber</span>,
+            <span class="status-single-line font-semibold">Pago</span> e
+            <span class="status-single-line font-semibold">a Pagar</span>.
+          </p>
+        </div>
+        <span id="balanceBadge" class="status-single-line rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1.5 text-xs font-bold text-emerald-900">
+          Balanço Fechado (Ativo = Passivo)
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-5">
+        <!-- Lado Esquerdo: ATIVO -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 pb-2.5 border-b border-slate-200">
+              Ativo
+            </h3>
+            <dl class="divide-y divide-slate-200/80 text-sm mt-1">
+              <div class="py-3 flex items-center justify-between gap-4">
+                <dt class="font-medium text-slate-700">Conta Corrente / Caixa Realizado</dt>
+                <dd id="balContaCorrente" class="font-bold text-slate-900 tabular-nums">R$ 0,00</dd>
+              </div>
+              <div class="py-3 flex items-center justify-between gap-4">
+                <dt class="font-medium text-slate-700">Contas a Receber</dt>
+                <dd id="balContasAReceber" class="font-bold text-sky-800 tabular-nums">R$ 0,00</dd>
+              </div>
+              <div class="py-3 flex items-center justify-between gap-4">
+                <dt class="font-medium text-slate-700">Ativo Não Circulante</dt>
+                <dd id="balAtivoNaoCirculante" class="font-semibold text-slate-500 tabular-nums">R$ 0,00</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="mt-4 pt-3.5 border-t-2 border-slate-900 flex items-center justify-between gap-4">
+            <span class="text-sm font-extrabold uppercase tracking-wide text-slate-900">Total do Ativo</span>
+            <span id="balTotalAtivo" class="text-lg font-extrabold text-slate-900 tabular-nums">R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Lado Direito: PASSIVO & RIQUEZA LÍQUIDA -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 pb-2.5 border-b border-slate-200">
+              Passivo &amp; Riqueza Líquida
+            </h3>
+            <dl class="divide-y divide-slate-200/80 text-sm mt-1">
+              <div class="py-3 flex items-center justify-between gap-4">
+                <dt class="font-medium text-slate-700">Contas a Pagar / Passivo Exigível</dt>
+                <dd id="balPassivoExigivel" class="font-bold text-rose-700 tabular-nums">R$ 0,00</dd>
+              </div>
+              <div class="py-3 flex items-center justify-between gap-4">
+                <dt class="font-medium text-slate-700">Riqueza Líquida</dt>
+                <dd id="balRiquezaLiquida" class="font-bold text-indigo-700 tabular-nums">R$ 0,00</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="mt-4 pt-3.5 border-t-2 border-slate-900 flex items-center justify-between gap-4">
+            <span class="text-sm font-extrabold uppercase tracking-wide text-slate-900">Total do Passivo</span>
+            <span id="balTotalPassivo" class="text-lg font-extrabold text-slate-900 tabular-nums">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         5. TABELA DE LANÇAMENTOS (FILTRO POR MÊS + ORDENAÇÃO AUTOMÁTICA)
+         =================================================================== -->
+    <section aria-label="Livro de lançamentos" class="surface-card overflow-hidden">
+      <div class="p-5 md:px-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Lançamentos</h2>
+          <p class="text-xs text-slate-500">
+            Ordenado automaticamente por data (mantendo a ordem de inclusão no mesmo dia). Clique no status para alternar.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Filtro por Mês -->
+          <select
+            id="filterMonthSelect"
+            aria-label="Filtrar por mês"
+            class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 focus:outline-none cursor-pointer"
+          >
+            <option value="ALL">Todos os meses</option>
+          </select>
+
+          <button
+            type="button"
+            id="btnToggleOrder"
+            class="rounded-xl border border-slate-300 bg-white hover:bg-slate-100 px-3 py-2 text-xs font-bold text-slate-800 transition cursor-pointer"
+          >
+            Ordem: <span id="orderDirectionText">Crescente (↑)</span>
+          </button>
+
+          <select
+            id="filterStatusSelect"
+            aria-label="Filtrar por status"
+            class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:border-slate-900 focus:outline-none cursor-pointer"
+          >
+            <option value="ALL">Todos os status</option>
+            <option value="Recebido">Recebido</option>
+            <option value="a Receber">a Receber</option>
+            <option value="Pago">Pago</option>
+            <option value="a Pagar">a Pagar</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100/90 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
+              <th class="py-3 px-4">Data</th>
+              <th class="py-3 px-4">Descrição</th>
+              <th class="py-3 px-4">Categoria</th>
+              <th class="py-3 px-4 text-right">Entrada</th>
+              <th class="py-3 px-4 text-right">Saída</th>
+              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Observação</th>
+              <th class="py-3 px-4 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="ledgerBody" class="divide-y divide-slate-200"></tbody>
+          <tfoot id="ledgerFoot" class="bg-slate-50 border-t-2 border-slate-300 font-bold text-slate-900"></tfoot>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Aviso discreto de feedback sem alert() -->
+  <div
+    id="toastMessage"
+    role="status"
+    aria-live="polite"
+    class="hidden fixed bottom-5 right-5 z-50 max-w-sm rounded-xl bg-slate-900 text-white px-4 py-3 text-xs sm:text-sm font-medium shadow-lg"
+  ></div>
+
+  <!-- =====================================================================
+       LÓGICA DA APLICAÇÃO (JS MODULAR)
+       ===================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY = 'balanco_pessoal_ledger_v1';
+      const STATUS_FLOW = ['Recebido', 'a Receber', 'Pago', 'a Pagar'];
+
+      const MONTH_NAMES = {
+        '01': 'Janeiro',
+        '02': 'Fevereiro',
+        '03': 'Março',
+        '04': 'Abril',
+        '05': 'Maio',
+        '06': 'Junho',
+        '07': 'Julho',
+        '08': 'Agosto',
+        '09': 'Setembro',
+        '10': 'Outubro',
+        '11': 'Novembro',
+        '12': 'Dezembro'
+      };
+
+      // 14 lançamentos iniciais exatos do histórico
+      const INITIAL_ENTRIES = [
+        { id: 'init-01', seq: 1, data: '2026-11-01', descricao: 'Pró-labore', categoria: 'Entrada', entrada: 0, saida: 0, status: 'a Receber', observacao: 'Entrada inicial no BB' },
+        { id: 'init-02', seq: 2, data: '2026-11-02', descricao: 'Pró-labore', categoria: 'Entrada', entrada: 0, saida: 0, status: 'a Receber', observacao: 'Entrada do dia 2' },
+        { id: 'init-03', seq: 3, data: '2026-11-08', descricao: 'Recebimento', categoria: 'Entrada', entrada: 300.00, saida: 0, status: 'Recebido', observacao: 'Recebimento do dia 8' },
+        { id: 'init-04', seq: 4, data: '2026-11-08', descricao: 'Mesada', categoria: 'Saída', entrada: 0, saida: -30.00, status: 'Pago', observacao: 'R$ 10 para cada um dos 3 filhos' },
+        { id: 'init-05', seq: 5, data: '2026-11-08', descricao: 'Caridade', categoria: 'Saída', entrada: 0, saida: -14.09, status: 'Pago', observacao: 'Coleta de 1%' },
+        { id: 'init-06', seq: 6, data: '2026-11-09', descricao: 'Água de Beber', categoria: 'Saída', entrada: 0, saida: -26.00, status: 'Pago', observacao: 'Vencimento obrigatório (fecha dia 5)' },
+        { id: 'init-07', seq: 7, data: '2026-12-12', descricao: 'Cartão de crédito', categoria: 'Saída', entrada: 0, saida: -362.14, status: 'Pago', observacao: 'Coleta de 2%' },
+        { id: 'init-08', seq: 8, data: '2026-12-18', descricao: 'Celular', categoria: 'Saída', entrada: 0, saida: -44.00, status: 'Pago', observacao: 'Fatura Vivo (~R$ 44)' },
+        { id: 'init-09', seq: 9, data: '2026-12-22', descricao: 'Recebimento', categoria: 'Entrada', entrada: 1109.00, saida: 0, status: 'Recebido', observacao: 'Recebimento principal do mês' },
+        { id: 'init-10', seq: 10, data: '2026-12-23', descricao: 'Água Cisterna', categoria: 'Saída', entrada: 0, saida: -100.00, status: 'Pago', observacao: 'Cisterna R$ 100 + água beber R$ 26' },
+        { id: 'init-11', seq: 11, data: '2026-12-23', descricao: 'Conta de Luz', categoria: 'Saída', entrada: 0, saida: -56.53, status: 'Pago', observacao: 'Conta de Luz de Dezembro' },
+        { id: 'init-12', seq: 12, data: '2026-12-25', descricao: 'Aluguel', categoria: 'Saída', entrada: 0, saida: -400.00, status: 'Pago', observacao: 'Aluguel da casa' },
+        { id: 'init-13', seq: 13, data: '2026-12-30', descricao: 'Empréstimo', categoria: 'Saída', entrada: 0, saida: -207.44, status: 'Pago', observacao: 'Adiantamento de parcela antes do dia 12' },
+        { id: 'init-14', seq: 14, data: '2026-12-30', descricao: 'Internet', categoria: 'Saída', entrada: 0, saida: -69.90, status: 'Pago', observacao: 'Internet do mês' }
+      ];
+
+      // Estado da aplicação
+      let state = {
+        entries: [],
+        sortAsc: true,
+        filterMonth: 'ALL',
+        filterStatus: 'ALL',
+        nextSeq: 15
+      };
+
+      let toastTimer = null;
+
+      // Cache de elementos DOM
+      const dom = {
+        form: document.getElementById('entryForm'),
+        formHeading: document.getElementById('formHeading'),
+        editEntryId: document.getElementById('editEntryId'),
+        btnCancelEdit: document.getElementById('btnCancelEdit'),
+        btnSubmitEntry: document.getElementById('btnSubmitEntry'),
+        fieldData: document.getElementById('fieldData'),
+        fieldDescricao: document.getElementById('fieldDescricao'),
+        fieldCategoria: document.getElementById('fieldCategoria'),
+        fieldValor: document.getElementById('fieldValor'),
+        fieldStatus: document.getElementById('fieldStatus'),
+        fieldObservacao: document.getElementById('fieldObservacao'),
+        filterMonthSelect: document.getElementById('filterMonthSelect'),
+        btnToggleOrder: document.getElementById('btnToggleOrder'),
+        orderDirectionText: document.getElementById('orderDirectionText'),
+        filterStatusSelect: document.getElementById('filterStatusSelect'),
+        btnResetSeed: document.getElementById('btnResetSeed'),
+        saveStatusPill: document.getElementById('saveStatusPill'),
+        ledgerBody: document.getElementById('ledgerBody'),
+        ledgerFoot: document.getElementById('ledgerFoot'),
+        toast: document.getElementById('toastMessage'),
+        cards: {
+          entradasRecebidas: document.getElementById('cardEntradasRecebidas'),
+          aReceberSub: document.getElementById('cardAReceberSub'),
+          saidasPagas: document.getElementById('cardSaidasPagas'),
+          aPagarSub: document.getElementById('cardAPagarSub'),
+          totalAtivo: document.getElementById('cardTotalAtivo'),
+          caixaSub: document.getElementById('cardCaixaSub'),
+          riquezaLiquida: document.getElementById('cardRiquezaLiquida')
+        },
+        balance: {
+          badge: document.getElementById('balanceBadge'),
+          contaCorrente: document.getElementById('balContaCorrente'),
+          contasAReceber: document.getElementById('balContasAReceber'),
+          ativoNaoCirculante: document.getElementById('balAtivoNaoCirculante'),
+          totalAtivo: document.getElementById('balTotalAtivo'),
+          passivoExigivel: document.getElementById('balPassivoExigivel'),
+          riquezaLiquida: document.getElementById('balRiquezaLiquida'),
+          totalPassivo: document.getElementById('balTotalPassivo')
+        }
+      };
+
+      // --- Utilitários de Formatação e Cálculo ---
+      function roundCents(num) {
+        return Math.round((Number(num) + Number.EPSILON) * 100) / 100;
+      }
+
+      function formatBRL(value) {
+        const clean = roundCents(value);
+        return clean.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+      }
+
+      function formatDatePtBr(isoDate) {
+        const parts = String(isoDate || '').split('-');
+        if (parts.length !== 3) return isoDate || '';
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+
+      function getYearMonth(isoDate) {
+        const match = String(isoDate || '').match(/^(\d{4})-(\d{2})/);
+        return match ? `${match[1]}-${match[2]}` : '';
+      }
+
+      function formatMonthLabel(ym) {
+        const parts = String(ym || '').split('-');
+        if (parts.length !== 2) return ym;
+        const nomeMes = MONTH_NAMES[parts[1]] || parts[1];
+        return `${nomeMes}/${parts[0]}`;
+      }
+
+      function getTodayIso() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function parseMoney(raw) {
+        if (typeof raw === 'number') {
+          return Number.isFinite(raw) ? roundCents(raw) : NaN;
+        }
+        const cleaned = String(raw || '').trim().replace(/R\$/gi, '').replace(/\s+/g, '');
+        if (!cleaned) return NaN;
+        const normalized = cleaned.includes(',')
+          ? cleaned.replace(/\./g, '').replace(',', '.')
+          : cleaned;
+        const val = Number(normalized);
+        return Number.isFinite(val) ? roundCents(val) : NaN;
+      }
+
+      function escapeHtml(text) {
+        return String(text ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function showToast(message) {
+        if (!dom.toast) return;
+        dom.toast.textContent = message;
+        dom.toast.classList.remove('hidden');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          dom.toast.classList.add('hidden');
+        }, 2800);
+      }
+
+      // --- Ordenação Cronológica Automática ---
+      function sortEntriesChronologically(list, ascending = state.sortAsc) {
+        const dir = ascending ? 1 : -1;
+        return [...list].sort((a, b) => {
+          const dateCmp = String(a.data).localeCompare(String(b.data));
+          if (dateCmp !== 0) return dateCmp * dir;
+          return ((Number(a.seq) || 0) - (Number(b.seq) || 0)) * dir;
+        });
+      }
+
+      function applyAutoSort() {
+        state.entries = sortEntriesChronologically(state.entries, state.sortAsc);
+      }
+
+      // --- Persistência em localStorage ---
+      function cloneInitialEntries() {
+        return INITIAL_ENTRIES.map((row) => ({ ...row }));
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+          dom.saveStatusPill.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-600"></span>Salvo no navegador';
+        } catch (err) {
+          console.error('Falha ao salvar no localStorage:', err);
+          dom.saveStatusPill.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span>Armazenamento indisponível';
+        }
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            state.entries = cloneInitialEntries();
+            state.nextSeq = 15;
+            applyAutoSort();
+            saveState();
+            return;
+          }
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) {
+            state.entries = cloneInitialEntries();
+            state.nextSeq = 15;
+            applyAutoSort();
+            saveState();
+            return;
+          }
+
+          let maxSeq = 0;
+          state.entries = parsed.map((item, index) => {
+            const categoria = item.categoria === 'Entrada' ? 'Entrada' : 'Saída';
+            const entradaNum = Number.isFinite(Number(item.entrada)) ? roundCents(item.entrada) : 0;
+            const saidaNum = Number.isFinite(Number(item.saida)) ? roundCents(item.saida) : 0;
+            const seq = Number.isFinite(Number(item.seq)) && Number(item.seq) > 0
+              ? Number(item.seq)
+              : index + 1;
+            if (seq > maxSeq) maxSeq = seq;
+
+            return {
+              id: item.id || `entry-${seq}-${Date.now()}`,
+              seq,
+              data: typeof item.data === 'string' && item.data ? item.data : getTodayIso(),
+              descricao: String(item.descricao || '').trim() || 'Lançamento',
+              categoria,
+              entrada: categoria === 'Entrada' ? Math.abs(entradaNum) : 0,
+              saida: categoria === 'Saída' ? -Math.abs(saidaNum) : 0,
+              status: STATUS_FLOW.includes(item.status) ? item.status : (categoria === 'Entrada' ? 'Recebido' : 'Pago'),
+              observacao: String(item.observacao || '').trim()
+            };
+          });
+          state.nextSeq = maxSeq + 1;
+          applyAutoSort();
+        } catch (err) {
+          console.error('Falha ao carregar do localStorage:', err);
+          state.entries = cloneInitialEntries();
+          state.nextSeq = 15;
+          applyAutoSort();
+        }
+      }
+
+      // --- Cálculo do Balanço Patrimonial ---
+      function calculateBalance(entries) {
+        let totalEntradasRecebidas = 0;
+        let totalAReceber = 0;
+        let totalSaidasPagas = 0;
+        let passivoExigivelAbs = 0;
+
+        for (const item of entries) {
+          const valEntrada = Number(item.entrada) || 0;
+          const valSaidaAbs = Math.abs(Number(item.saida) || 0);
+
+          if (item.status === 'Recebido') {
+            totalEntradasRecebidas = roundCents(totalEntradasRecebidas + valEntrada);
+          } else if (item.status === 'a Receber') {
+            totalAReceber = roundCents(totalAReceber + valEntrada);
+          } else if (item.status === 'Pago') {
+            totalSaidasPagas = roundCents(totalSaidasPagas + valSaidaAbs);
+          } else if (item.status === 'a Pagar') {
+            passivoExigivelAbs = roundCents(passivoExigivelAbs + valSaidaAbs);
+          }
+        }
+
+        const contaCorrente = roundCents(totalEntradasRecebidas - totalSaidasPagas);
+        const ativoNaoCirculante = 0;
+        const totalAtivo = roundCents(contaCorrente + totalAReceber + ativoNaoCirculante);
+        const riquezaLiquida = roundCents(totalAtivo - Math.abs(passivoExigivelAbs));
+        const totalPassivo = roundCents(passivoExigivelAbs + riquezaLiquida);
+        const balanced = Math.abs(totalAtivo - totalPassivo) < 0.005;
+
+        return {
+          totalEntradasRecebidas,
+          totalAReceber,
+          totalSaidasPagas,
+          passivoExigivelAbs,
+          contaCorrente,
+          ativoNaoCirculante,
+          totalAtivo,
+          riquezaLiquida,
+          totalPassivo,
+          balanced
+        };
+      }
+
+      // --- Filtro por Mês e Status ---
+      function syncMonthFilterOptions() {
+        const monthsSet = new Set();
+        for (const item of state.entries) {
+          const ym = getYearMonth(item.data);
+          if (ym) monthsSet.add(ym);
+        }
+        const sortedMonths = Array.from(monthsSet).sort();
+
+        if (state.filterMonth !== 'ALL' && !monthsSet.has(state.filterMonth)) {
+          state.filterMonth = 'ALL';
+        }
+
+        const optionsHtml = [
+          '<option value="ALL">Todos os meses</option>',
+          ...sortedMonths.map((ym) => `<option value="${escapeHtml(ym)}">${escapeHtml(formatMonthLabel(ym))}</option>`)
+        ].join('');
+
+        dom.filterMonthSelect.innerHTML = optionsHtml;
+        dom.filterMonthSelect.value = state.filterMonth;
+      }
+
+      function getFilteredEntries() {
+        return state.entries.filter((item) => {
+          const monthOk = state.filterMonth === 'ALL' || getYearMonth(item.data) === state.filterMonth;
+          const statusOk = state.filterStatus === 'ALL' || item.status === state.filterStatus;
+          return monthOk && statusOk;
+        });
+      }
+
+      // --- Renderização ---
+      function getBadgeStyle(status) {
+        switch (status) {
+          case 'Recebido':
+            return 'bg-emerald-100 text-emerald-950 border-emerald-300 hover:bg-emerald-200';
+          case 'a Receber':
+            return 'bg-sky-100 text-sky-950 border-sky-300 hover:bg-sky-200';
+          case 'Pago':
+            return 'bg-slate-200 text-slate-900 border-slate-300 hover:bg-slate-300';
+          case 'a Pagar':
+            return 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-200';
+          default:
+            return 'bg-slate-100 text-slate-800 border-slate-300';
+        }
+      }
+
+      function renderSummaryAndBalance(bal) {
+        dom.cards.entradasRecebidas.textContent = formatBRL(bal.totalEntradasRecebidas);
+        dom.cards.aReceberSub.textContent = `A receber: ${formatBRL(bal.totalAReceber)}`;
+        dom.cards.saidasPagas.textContent = formatBRL(-bal.totalSaidasPagas);
+        dom.cards.aPagarSub.textContent = `A pagar: ${formatBRL(-bal.passivoExigivelAbs)}`;
+        dom.cards.totalAtivo.textContent = formatBRL(bal.totalAtivo);
+        dom.cards.caixaSub.textContent = `Caixa realizado: ${formatBRL(bal.contaCorrente)}`;
+        dom.cards.riquezaLiquida.textContent = formatBRL(bal.riquezaLiquida);
+
+        dom.balance.contaCorrente.textContent = formatBRL(bal.contaCorrente);
+        dom.balance.contasAReceber.textContent = formatBRL(bal.totalAReceber);
+        dom.balance.ativoNaoCirculante.textContent = formatBRL(bal.ativoNaoCirculante);
+        dom.balance.totalAtivo.textContent = formatBRL(bal.totalAtivo);
+        dom.balance.passivoExigivel.textContent = formatBRL(bal.passivoExigivelAbs);
+        dom.balance.riquezaLiquida.textContent = formatBRL(bal.riquezaLiquida);
+        dom.balance.totalPassivo.textContent = formatBRL(bal.totalPassivo);
+
+        if (bal.balanced) {
+          dom.balance.badge.className = 'status-single-line rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1.5 text-xs font-bold text-emerald-900';
+          dom.balance.badge.textContent = 'Balanço Fechado (Ativo = Passivo)';
+        } else {
+          dom.balance.badge.className = 'status-single-line rounded-full bg-rose-100 border border-rose-300 px-3.5 py-1.5 text-xs font-bold text-rose-900';
+          dom.balance.badge.textContent = 'Diferença no Balanço';
+        }
+      }
+
+      function renderLedgerTable(visibleEntries) {
+        dom.orderDirectionText.textContent = state.sortAsc ? 'Crescente (↑)' : 'Decrescente (↓)';
+
+        if (!visibleEntries.length) {
+          dom.ledgerBody.innerHTML = `
+            <tr>
+              <td colspan="8" class="py-8 px-4 text-center text-sm text-slate-500">
+                Nenhum lançamento encontrado para o filtro selecionado.
+              </td>
+            </tr>
+          `;
+          dom.ledgerFoot.innerHTML = '';
+          return;
+        }
+
+        let sumEntrada = 0;
+        let sumSaida = 0;
+
+        const rowsHtml = visibleEntries.map((item) => {
+          const valEntrada = Number(item.entrada) || 0;
+          const valSaida = Number(item.saida) || 0;
+          sumEntrada = roundCents(sumEntrada + valEntrada);
+          sumSaida = roundCents(sumSaida + valSaida);
+
+          const entradaCell = valEntrada > 0
+            ? `<span class="font-semibold text-emerald-700">${escapeHtml(formatBRL(valEntrada))}</span>`
+            : `<span class="text-slate-400">—</span>`;
+
+          const saidaCell = valSaida !== 0
+            ? `<span class="font-semibold text-rose-700">${escapeHtml(formatBRL(valSaida))}</span>`
+            : `<span class="text-slate-400">—</span>`;
+
+          return `
+            <tr class="hover:bg-slate-50/90 transition-colors">
+              <td class="py-3 px-4 font-medium text-slate-800 whitespace-nowrap tabular-nums">${escapeHtml(formatDatePtBr(item.data))}</td>
+              <td class="py-3 px-4 font-semibold text-slate-900">${escapeHtml(item.descricao)}</td>
+              <td class="py-3 px-4 text-slate-700 whitespace-nowrap">${escapeHtml(item.categoria)}</td>
+              <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap">${entradaCell}</td>
+              <td class="py-3 px-4 text-right tabular-nums whitespace-nowrap">${saidaCell}</td>
+              <td class="py-3 px-4">
+                <button
+                  type="button"
+                  data-action="cycle-status"
+                  data-id="${escapeHtml(item.id)}"
+                  title="Clique para alternar o status"
+                  class="status-single-line rounded-full border px-2.5 py-1 text-xs font-bold transition cursor-pointer ${getBadgeStyle(item.status)}"
+                >${escapeHtml(item.status)}</button>
+              </td>
+              <td class="py-3 px-4 text-slate-600">${escapeHtml(item.observacao || '—')}</td>
+              <td class="py-3 px-4 text-center whitespace-nowrap">
+                <button
+                  type="button"
+                  data-action="edit"
+                  data-id="${escapeHtml(item.id)}"
+                  class="rounded-lg border border-slate-300 bg-white hover:bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition cursor-pointer mr-1"
+                >Editar</button>
+                <button
+                  type="button"
+                  data-action="delete"
+                  data-id="${escapeHtml(item.id)}"
+                  class="rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700 transition cursor-pointer"
+                >Excluir</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        dom.ledgerBody.innerHTML = rowsHtml;
+
+        const filtroLabel = state.filterMonth !== 'ALL' || state.filterStatus !== 'ALL'
+          ? 'Total do filtro'
+          : 'Total geral';
+
+        dom.ledgerFoot.innerHTML = `
+          <tr>
+            <td colspan="3" class="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-slate-700">
+              ${escapeHtml(filtroLabel)} (${visibleEntries.length} ${visibleEntries.length === 1 ? 'lançamento' : 'lançamentos'})
+            </td>
+            <td class="py-3.5 px-4 text-right text-emerald-800 tabular-nums whitespace-nowrap">${escapeHtml(formatBRL(sumEntrada))}</td>
+            <td class="py-3.5 px-4 text-right text-rose-800 tabular-nums whitespace-nowrap">${escapeHtml(formatBRL(sumSaida))}</td>
+            <td colspan="3" class="py-3.5 px-4"></td>
+          </tr>
+        `;
+      }
+
+      function renderAll() {
+        applyAutoSort();
+        syncMonthFilterOptions();
+        const bal = calculateBalance(state.entries);
+        renderSummaryAndBalance(bal);
+        renderLedgerTable(getFilteredEntries());
+      }
+
+      // --- Ações de Formulário e Tabela ---
+      function resetFormToNew() {
+        dom.editEntryId.value = '';
+        dom.formHeading.textContent = 'Novo Lançamento';
+        dom.btnSubmitEntry.textContent = 'Adicionar Lançamento';
+        dom.btnCancelEdit.classList.add('hidden');
+        dom.fieldData.value = getTodayIso();
+        dom.fieldDescricao.value = '';
+        dom.fieldCategoria.value = 'Entrada';
+        dom.fieldValor.value = '';
+        dom.fieldStatus.value = 'Recebido';
+        dom.fieldObservacao.value = '';
+      }
+
+      function startEditEntry(id) {
+        const item = state.entries.find((row) => row.id === id);
+        if (!item) return;
+
+        dom.editEntryId.value = item.id;
+        dom.formHeading.textContent = 'Editar Lançamento';
+        dom.btnSubmitEntry.textContent = 'Salvar Alterações';
+        dom.btnCancelEdit.classList.remove('hidden');
+
+        dom.fieldData.value = item.data;
+        dom.fieldDescricao.value = item.descricao;
+        dom.fieldCategoria.value = item.categoria;
+        const activeAmount = item.categoria === 'Entrada'
+          ? Math.abs(Number(item.entrada) || 0)
+          : Math.abs(Number(item.saida) || 0);
+        dom.fieldValor.value = activeAmount.toFixed(2).replace('.', ',');
+        dom.fieldStatus.value = item.status;
+        dom.fieldObservacao.value = item.observacao || '';
+        dom.fieldDescricao.focus();
+      }
+
+      function cycleEntryStatus(id) {
+        const idx = state.entries.findIndex((row) => row.id === id);
+        if (idx === -1) return;
+
+        const current = state.entries[idx].status;
+        const nextIdx = (STATUS_FLOW.indexOf(current) + 1) % STATUS_FLOW.length;
+        state.entries[idx].status = STATUS_FLOW[nextIdx];
+
+        saveState();
+        renderAll();
+        showToast(`Status alterado para "${state.entries[idx].status}".`);
+      }
+
+      function deleteEntry(id) {
+        const idx = state.entries.findIndex((row) => row.id === id);
+        if (idx === -1) return;
+
+        const removed = state.entries[idx];
+        state.entries.splice(idx, 1);
+
+        if (dom.editEntryId.value === id) {
+          resetFormToNew();
+        }
+
+        saveState();
+        renderAll();
+        showToast(`"${removed.descricao}" removido.`);
+      }
+
+      function handleFormSubmit(event) {
+        event.preventDefault();
+
+        const dataVal = dom.fieldData.value.trim();
+        const descricaoVal = dom.fieldDescricao.value.trim();
+        const categoriaVal = dom.fieldCategoria.value === 'Saída' ? 'Saída' : 'Entrada';
+        const parsedValor = parseMoney(dom.fieldValor.value);
+        const statusVal = STATUS_FLOW.includes(dom.fieldStatus.value) ? dom.fieldStatus.value : 'Recebido';
+        const observacaoVal = dom.fieldObservacao.value.trim();
+        const editingId = dom.editEntryId.value.trim();
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dataVal)) {
+          showToast('Informe uma data válida.');
+          dom.fieldData.focus();
+          return;
+        }
+
+        if (!descricaoVal) {
+          showToast('Informe a descrição do lançamento.');
+          dom.fieldDescricao.focus();
+          return;
+        }
+
+        if (Number.isNaN(parsedValor) || parsedValor < 0) {
+          showToast('Informe um valor válido (ex.: 20,00 ou 0).');
+          dom.fieldValor.focus();
+          return;
+        }
+
+        const magnitude = Math.abs(parsedValor);
+        const entrada = categoriaVal === 'Entrada' ? magnitude : 0;
+        const saida = categoriaVal === 'Saída' ? -magnitude : 0;
+
+        if (editingId) {
+          const idx = state.entries.findIndex((row) => row.id === editingId);
+          if (idx !== -1) {
+            state.entries[idx] = {
+              ...state.entries[idx],
+              data: dataVal,
+              descricao: descricaoVal,
+              categoria: categoriaVal,
+              entrada,
+              saida,
+              status: statusVal,
+              observacao: observacaoVal
+            };
+            saveState();
+            resetFormToNew();
+            renderAll();
+            showToast('Lançamento atualizado e reordenado por data.');
+            return;
+          }
+        }
+
+        const newEntry = {
+          id: `entry-${state.nextSeq}-${Date.now()}`,
+          seq: state.nextSeq++,
+          data: dataVal,
+          descricao: descricaoVal,
+          categoria: categoriaVal,
+          entrada,
+          saida,
+          status: statusVal,
+          observacao: observacaoVal
+        };
+
+        state.entries.push(newEntry);
+        saveState();
+        resetFormToNew();
+        renderAll();
+        showToast('Lançamento adicionado e ordenado por data.');
+      }
+
+      // --- Bind de Eventos ---
+      function bindEvents() {
+        dom.form.addEventListener('submit', handleFormSubmit);
+        dom.btnCancelEdit.addEventListener('click', resetFormToNew);
+
+        dom.fieldCategoria.addEventListener('change', () => {
+          if (dom.editEntryId.value) return;
+          dom.fieldStatus.value = dom.fieldCategoria.value === 'Saída' ? 'Pago' : 'Recebido';
+        });
+
+        dom.filterMonthSelect.addEventListener('change', () => {
+          state.filterMonth = dom.filterMonthSelect.value;
+          renderLedgerTable(getFilteredEntries());
+        });
+
+        dom.filterStatusSelect.addEventListener('change', () => {
+          state.filterStatus = dom.filterStatusSelect.value;
+          renderLedgerTable(getFilteredEntries());
+        });
+
+        dom.btnToggleOrder.addEventListener('click', () => {
+          state.sortAsc = !state.sortAsc;
+          renderAll();
+        });
+
+        dom.btnResetSeed.addEventListener('click', () => {
+          state.entries = cloneInitialEntries();
+          state.nextSeq = 15;
+          state.filterMonth = 'ALL';
+          state.filterStatus = 'ALL';
+          resetFormToNew();
+          saveState();
+          renderAll();
+          showToast('14 lançamentos iniciais restaurados.');
+        });
+
+        dom.ledgerBody.addEventListener('click', (event) => {
+          const btn = event.target.closest('button[data-action][data-id]');
+          if (!btn) return;
+
+          const action = btn.getAttribute('data-action');
+          const id = btn.getAttribute('data-id');
+
+          if (action === 'cycle-status') {
+            cycleEntryStatus(id);
+          } else if (action === 'edit') {
+            startEditEntry(id);
+          } else if (action === 'delete') {
+            deleteEntry(id);
+          }
+        });
+      }
+
+      // --- Inicialização ---
+      function init() {
+        dom.fieldData.value = getTodayIso();
+        loadState();
+        bindEvents();
+        renderAll();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
