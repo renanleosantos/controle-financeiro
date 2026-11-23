@@ -802,6 +802,15 @@ tfoot td {
   display: none;
 }
 
+.app-credit {
+  margin-top: 22px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
 .drawer-backdrop {
   display: none;
   position: fixed;
@@ -968,7 +977,7 @@ tfoot td {
         </span>
         <span class="theme-action">Alternar</span>
       </button>
-      <span class="muted" id="saveState">Desenvolvido por Renan Santos</span>
+      <span class="muted" id="saveState">Registro ativo</span>
     </div>
   </aside>
 
@@ -984,7 +993,7 @@ tfoot td {
         </button>
         <div>
           <h1 class="page-title" id="topPageTitle">Balanço</h1>
-          <p class="page-sub" id="topPageSub">Visão consolidada do fluxo de caixa, Desenvolvido por Ativos, passivos e riqueza líquida.</p>
+          <p class="page-sub" id="topPageSub">Visão consolidada do fluxo de caixa, ativos, passivos e riqueza líquida.</p>
         </div>
       </div>
       <div class="recorte-chip">
@@ -1020,16 +1029,16 @@ tfoot td {
           <div class="kpi-link" style="color:#ef4444">Ver saídas nos lançamentos →</div>
         </button>
 
-        <button type="button" class="kpi-card" data-dash-kpi="Desenvolvido por Ativo">
+        <button type="button" class="kpi-card" data-dash-kpi="ativo">
           <div class="kpi-head">
-            <span class="kpi-label" style="color:#0ea5e9">SALDO EM CAIXA / Desenvolvido por Ativo</span>
+            <span class="kpi-label" style="color:#0ea5e9">SALDO EM CAIXA / ATIVO</span>
             <span class="kpi-icon" style="background:rgba(14,165,233,.14);color:#0ea5e9">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
             </span>
           </div>
-          <div id="kDesenvolvido por Ativo" class="kpi-val">R$ 0,00</div>
+          <div id="kAtivo" class="kpi-val">R$ 0,00</div>
           <div id="kSaldoAnterior" class="kpi-sub">Caixa Realizado: R$ 0,00</div>
-          <div class="kpi-link" style="color:#0ea5e9">Ver composição do Desenvolvido por Ativo →</div>
+          <div class="kpi-link" style="color:#0ea5e9">Ver composição do ativo →</div>
         </button>
 
         <button type="button" class="kpi-card" data-dash-kpi="riqueza">
@@ -1040,7 +1049,7 @@ tfoot td {
             </span>
           </div>
           <div id="kRiqueza" class="kpi-val">R$ 0,00</div>
-          <div id="kDeltaRiqueza" class="kpi-sub">Desenvolvido por Ativo (R$ 0,00) − Passivo (R$ 0,00)</div>
+          <div id="kDeltaRiqueza" class="kpi-sub">Ativo (R$ 0,00) − Passivo (R$ 0,00)</div>
           <div class="kpi-link" style="color:#8b5cf6">Ver composição da riqueza →</div>
         </button>
       </div>
@@ -1055,11 +1064,11 @@ tfoot td {
         </div>
         <div class="grid2">
           <div class="box">
-            <strong>Desenvolvido por Ativo</strong>
+            <strong>ATIVO</strong>
             <div class="line"><span>Conta Corrente / Caixa Realizado</span><strong id="bCaixaRecorte">R$ 0,00</strong></div>
             <div class="line"><span>Contas a Receber</span><strong id="bReceber">R$ 0,00</strong></div>
-            <div class="line"><span>Desenvolvido por Ativo Não Circulante / Anterior</span><strong id="bAnterior">R$ 0,00</strong></div>
-            <div class="total"><span>Total do Desenvolvido por Ativo</span><span id="bTotalDesenvolvido por Ativo">R$ 0,00</span></div>
+            <div class="line"><span>Ativo Não Circulante / Anterior</span><strong id="bAnterior">R$ 0,00</strong></div>
+            <div class="total"><span>Total do Ativo</span><span id="bTotalAtivo">R$ 0,00</span></div>
           </div>
           <div class="box">
             <strong>PASSIVO &amp; RIQUEZA LÍQUIDA</strong>
@@ -1157,7 +1166,7 @@ tfoot td {
       <div class="card" style="padding:0;overflow:hidden">
         <div id="dashFilterBanner" class="dash-filter-banner">
           <div>
-            <strong id="dashFilterTitle">Filtro do Dashboard Desenvolvido por Ativo</strong>
+            <strong id="dashFilterTitle">Filtro do Dashboard ativo</strong>
             <div id="dashFilterDetail" class="muted"></div>
           </div>
           <button type="button" id="btnClearDashFilter" class="btn-mini">Limpar filtro</button>
@@ -1310,6 +1319,10 @@ tfoot td {
         <div id="historicoList"></div>
       </div>
     </section>
+
+    <footer class="app-credit">
+      Desenvolvido por <strong>Renan Leonardo dos Santos</strong>
+    </footer>
   </main>
 </div>
 
@@ -1346,7 +1359,7 @@ const MONTHS = {
   "09": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
 };
 const TAB_META = {
-  dashboard: { title: "Balanço", sub: "Visão consolidada do fluxo de caixa, Desenvolvido por Ativos, passivos e riqueza líquida." },
+  dashboard: { title: "Balanço", sub: "Visão consolidada do fluxo de caixa, ativos, passivos e riqueza líquida." },
   lancamentos: { title: "Lançamentos", sub: "Cadastro, conferência e acompanhamento de entradas, saídas e prazos." },
   apagar: { title: "A Pagar", sub: "Obrigações pendentes e baixa direta de pagamentos." },
   metas: { title: "Destinos", sub: "Distribuição dos gastos por destino e centro de movimentação." },
@@ -1451,7 +1464,7 @@ function save() {
     localStorage.setItem(KEY_META, JSON.stringify({ customDestinos: state.customDestinos }));
     localStorage.setItem(KEY_PREF, JSON.stringify({ dark: state.dark }));
     saveHistoryOnly();
-    $("saveState").textContent = "Ativo";
+    $("saveState").textContent = "Registro atualizado";
   } catch {
     $("saveState").textContent = "Sem armazenamento";
   }
@@ -1542,8 +1555,8 @@ function calcBalance() {
   const prior = calcSubset(priorRows);
   const cur = calcSubset(activeRows);
   const anterior = prior.caixa;
-  const Desenvolvido por Ativo = rnd(anterior + cur.caixa + cur.aRec);
-  const riqueza = rnd(Desenvolvido por Ativo - Math.abs(cur.aPag));
+  const ativo = rnd(anterior + cur.caixa + cur.aRec);
+  const riqueza = rnd(ativo - Math.abs(cur.aPag));
   const passivo = rnd(Math.abs(cur.aPag) + riqueza);
 
   return {
@@ -1553,7 +1566,7 @@ function calcBalance() {
     pag: cur.pag,
     aPag: cur.aPag,
     caixaRecorte: cur.caixa,
-    Desenvolvido por Ativo,
+    ativo,
     riqueza,
     passivo,
     activeRows
@@ -1733,20 +1746,20 @@ function render() {
   $("kARec").textContent = `Recebido • A receber: ${brl(b.aRec)}`;
   $("kPag").textContent = brl(b.pag);
   $("kAPag").textContent = `Pago • A pagar: ${brl(b.aPag)}`;
-  $("kDesenvolvido por Ativo").textContent = brl(b.Desenvolvido por Ativo);
+  $("kAtivo").textContent = brl(b.ativo);
   $("kSaldoAnterior").textContent = `Caixa Realizado: ${brl(b.caixaRecorte)}`;
   $("kRiqueza").textContent = brl(b.riqueza);
-  $("kDeltaRiqueza").textContent = `Desenvolvido por Ativo (${brl(b.Desenvolvido por Ativo)}) − Passivo (${brl(b.aPag)})`;
+  $("kDeltaRiqueza").textContent = `Ativo (${brl(b.ativo)}) − Passivo (${brl(b.aPag)})`;
 
   $("balTitulo").textContent = `Balanço Patrimonial — ${monthLabel(state.month)}`;
   $("bCaixaRecorte").textContent = brl(b.caixaRecorte);
   $("bReceber").textContent = brl(b.aRec);
   $("bAnterior").textContent = brl(b.anterior);
-  $("bTotalDesenvolvido por Ativo").textContent = brl(b.Desenvolvido por Ativo);
+  $("bTotalAtivo").textContent = brl(b.ativo);
   $("bPagar").textContent = brl(b.aPag);
   $("bRiqueza").textContent = brl(b.riqueza);
   $("bTotalPassivo").textContent = brl(b.passivo);
-  $("balBadge").textContent = Math.abs(b.Desenvolvido por Ativo - b.passivo) < 0.005 ? "Balanço Fechado" : "Revisar Balanço";
+  $("balBadge").textContent = Math.abs(b.ativo - b.passivo) < 0.005 ? "Balanço Fechado" : "Revisar Balanço";
 
   $("orderLbl").textContent = state.asc ? "Crescente (↑)" : "Decrescente (↓)";
 
@@ -1759,7 +1772,7 @@ function render() {
     }
     if (state.dashFocus === "entradas") return r.categoria === "Entrada";
     if (state.dashFocus === "saidas") return r.categoria === "Saída";
-    if (state.dashFocus === "Desenvolvido por Ativo") {
+    if (state.dashFocus === "ativo") {
       return (r.categoria === "Entrada" && (r.status === "Recebido" || r.status === "a Receber")) ||
              (r.categoria === "Saída" && r.status === "Pago");
     }
@@ -1775,10 +1788,10 @@ function render() {
     const titles = {
       entradas: ["Filtro: Entradas", `Recebido: ${brl(b.rec)} · A receber: ${brl(b.aRec)}`],
       saidas: ["Filtro: Saídas", `Pago: ${brl(b.pag)} · A pagar: ${brl(b.aPag)}`],
-      Desenvolvido por Ativo: ["Composição: Saldo em Caixa / Desenvolvido por Ativo", `Caixa Realizado (${brl(b.caixaRecorte)}) + A Receber (${brl(b.aRec)}) + Anterior (${brl(b.anterior)})`],
-      riqueza: ["Composição: Riqueza Líquida", `Desenvolvido por Ativo (${brl(b.Desenvolvido por Ativo)}) − Passivo Exigível (${brl(b.aPag)})`]
+      ativo: ["Composição: Saldo em Caixa / Ativo", `Caixa Realizado (${brl(b.caixaRecorte)}) + A Receber (${brl(b.aRec)}) + Anterior (${brl(b.anterior)})`],
+      riqueza: ["Composição: Riqueza Líquida", `Ativo (${brl(b.ativo)}) − Passivo Exigível (${brl(b.aPag)})`]
     };
-    const info = titles[state.dashFocus] || ["Filtro Desenvolvido por Ativo", ""];
+    const info = titles[state.dashFocus] || ["Filtro ativo", ""];
     $("dashFilterTitle").textContent = info[0];
     $("dashFilterDetail").textContent = info[1];
   } else {
