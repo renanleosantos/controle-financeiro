@@ -703,6 +703,28 @@ th {
   font-weight: 700;
 }
 
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color .15s ease, background .15s ease;
+}
+
+th.sortable:hover {
+  color: var(--text);
+}
+
+th.sortable.sort-active {
+  color: var(--accent);
+}
+
+.sort-ind {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: .75;
+}
+
 tfoot td {
   background: var(--surface2);
   border-top: 2px solid var(--line);
@@ -1189,16 +1211,16 @@ tfoot td {
 
         <div class="table-wrap">
           <table>
-            <thead>
+            <thead id="lancThead">
               <tr>
-                <th>Data</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Destino</th>
-                <th class="num">Entrada</th>
-                <th class="num">Saída</th>
-                <th>Status</th>
-                <th>Observação</th>
+                <th class="sortable sort-active" data-sort="data">Data<span class="sort-ind">↑</span></th>
+                <th class="sortable" data-sort="descricao">Descrição<span class="sort-ind"></span></th>
+                <th class="sortable" data-sort="categoria">Categoria<span class="sort-ind"></span></th>
+                <th class="sortable" data-sort="grupo">Destino<span class="sort-ind"></span></th>
+                <th class="num sortable" data-sort="entrada">Entrada<span class="sort-ind"></span></th>
+                <th class="num sortable" data-sort="saida">Saída<span class="sort-ind"></span></th>
+                <th class="sortable" data-sort="status">Status<span class="sort-ind"></span></th>
+                <th class="sortable" data-sort="observacao">Observação<span class="sort-ind"></span></th>
                 <th style="text-align:center">Ações</th>
               </tr>
             </thead>
@@ -1321,7 +1343,7 @@ tfoot td {
     </section>
 
     <footer class="app-credit">
-      Desenvolvido por <strong>Renan Santos</strong>
+      Desenvolvido por <strong>Renan Leonardo dos Santos</strong>
     </footer>
   </main>
 </div>
@@ -1368,6 +1390,7 @@ const TAB_META = {
 
 let state = {
   rows: [],
+  sortField: "data",
   asc: true,
   month: "ALL",
   status: "ALL",
@@ -1434,9 +1457,53 @@ function toast(msg) {
   toastTimer = setTimeout(() => { $("toast").style.display = "none"; }, 2800);
 }
 
+function compareByField(a, b, field) {
+  if (field === "entrada") {
+    return (Number(a.entrada) || 0) - (Number(b.entrada) || 0);
+  }
+  if (field === "saida") {
+    return Math.abs(Number(a.saida) || 0) - Math.abs(Number(b.saida) || 0);
+  }
+  if (field === "data") {
+    return (a.data || "").localeCompare(b.data || "");
+  }
+  const va = String(a[field] || "");
+  const vb = String(b[field] || "");
+  return va.localeCompare(vb, "pt-BR", { sensitivity: "base", numeric: true });
+}
+
 function sortRows() {
   const d = state.asc ? 1 : -1;
-  state.rows.sort((a, b) => ((a.data || "").localeCompare(b.data || "") || ((a.seq || 0) - (b.seq || 0))) * d);
+  const field = state.sortField || "data";
+  state.rows.sort((a, b) => {
+    const primary = compareByField(a, b, field);
+    if (primary !== 0) return primary * d;
+    const byDate = (a.data || "").localeCompare(b.data || "");
+    if (byDate !== 0) return byDate * d;
+    return ((a.seq || 0) - (b.seq || 0)) * d;
+  });
+}
+
+function syncSortHeaders() {
+  const field = state.sortField || "data";
+  const arrow = state.asc ? "↑" : "↓";
+  const labels = {
+    data: "Data",
+    descricao: "Descrição",
+    categoria: "Categoria",
+    grupo: "Destino",
+    entrada: "Entrada",
+    saida: "Saída",
+    status: "Status",
+    observacao: "Observação"
+  };
+  $("orderLbl").textContent = `${labels[field] || "Data"} · ${state.asc ? "Crescente (↑)" : "Decrescente (↓)"}`;
+  document.querySelectorAll("#lancThead th.sortable").forEach((th) => {
+    const active = th.dataset.sort === field;
+    th.classList.toggle("sort-active", active);
+    const ind = th.querySelector(".sort-ind");
+    if (ind) ind.textContent = active ? arrow : "";
+  });
 }
 
 function saveHistoryOnly() {
@@ -1761,7 +1828,7 @@ function render() {
   $("bTotalPassivo").textContent = brl(b.passivo);
   $("balBadge").textContent = Math.abs(b.ativo - b.passivo) < 0.005 ? "Balanço Fechado" : "Revisar Balanço";
 
-  $("orderLbl").textContent = state.asc ? "Crescente (↑)" : "Decrescente (↓)";
+  syncSortHeaders();
 
   const q = normText(state.searchTerm);
   const vis = b.activeRows.filter((r) => {
@@ -2285,6 +2352,19 @@ $("searchQuery").addEventListener("input", (e) => {
 
 $("btnOrder").addEventListener("click", () => {
   state.asc = !state.asc;
+  render();
+});
+
+$("lancThead").addEventListener("click", (e) => {
+  const th = e.target.closest("th[data-sort]");
+  if (!th) return;
+  const field = th.dataset.sort;
+  if (state.sortField === field) {
+    state.asc = !state.asc;
+  } else {
+    state.sortField = field;
+    state.asc = true;
+  }
   render();
 });
 
